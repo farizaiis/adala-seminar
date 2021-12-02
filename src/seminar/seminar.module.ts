@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { SeminarService } from './service/seminar.service';
 import { SeminarController } from './controller/seminar.controller';
