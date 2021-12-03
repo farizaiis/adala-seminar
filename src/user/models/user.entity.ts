@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert } from 'typeorm';
+import { UserRole } from './user.model';
 
 @Entity()
 export class UserEntity {
@@ -14,6 +15,13 @@ export class UserEntity {
 
   @Column()
   password: string;
+
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.USER,
+  })
+  role: string;
 
   @BeforeInsert()
   emailToLowerCase() {

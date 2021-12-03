@@ -8,7 +8,9 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
+import { User } from 'src/user/models/user.interface';
 import { UserService } from 'src/user/service/user.service';
+import { map } from 'rxjs';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -29,7 +31,21 @@ export class RolesGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const user = request.user;
-    return true;
+    const user: User = request.user.user;
+
+    return this.userService.findOne(user.id).pipe(
+      map((user: User) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const hasRole = () => roles.indexOf(user.role) > -1;
+        // eslint-disable-next-line @typescript-eslint/no-inferrable-types
+        let hasPermission: boolean = false;
+
+        if (hasRole()) {
+          hasPermission = true;
+        }
+
+        return user && hasPermission;
+      })
+    );
   }
 }
