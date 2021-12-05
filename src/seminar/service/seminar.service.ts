@@ -3,10 +3,15 @@
 /* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { from, Observable } from 'rxjs';
+import { from, map, Observable } from 'rxjs';
 import { Repository } from 'typeorm';
 import { SeminarEntity } from '../models/seminar.entity';
 import { Seminar } from '../models/seminar.interface';
+import {
+  paginate,
+  Pagination,
+  IPaginationOptions,
+} from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class SeminarService {
@@ -25,6 +30,14 @@ export class SeminarService {
 
   findAll(): Observable<Seminar[]> {
     return from(this.seminarRepository.find());
+  }
+
+  paginate(options: IPaginationOptions): Observable<Pagination<Seminar>> {
+    return from(paginate<Seminar>(this.seminarRepository, options)).pipe(
+      map((seminarPageable: Pagination<Seminar>) => {
+        return seminarPageable;
+      })
+    );
   }
 
   deleteOne(id: number): Observable<any> {

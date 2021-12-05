@@ -13,6 +13,7 @@ import { catchError, Observable, of, map } from 'rxjs';
 import { hasRoles } from 'src/auth/decorator/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-guards';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { UserIsUserGuard } from 'src/auth/guards/UserIsUser.guard';
 import { User } from '../models/user.interface';
 import { UserRole } from '../models/user.model';
 import { UserService } from '../service/user.service';
@@ -41,6 +42,7 @@ export class UserController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard, UserIsUserGuard)
   findOne(@Param() params): Observable<User> {
     return this.userService.findOne(params.id);
   }
@@ -53,11 +55,13 @@ export class UserController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, UserIsUserGuard)
   deleteOne(@Param('id') id: string): Observable<User> {
     return this.userService.deleteOne(Number(id));
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard, UserIsUserGuard)
   updateOne(@Param('id') id: string, @Body() user: User): Observable<User> {
     return this.userService.updateOne(Number(id), user);
   }

@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { UserEntity } from '../models/user.entity';
 import { User } from '../models/user.interface';
 import { AuthService } from 'src/auth/service/auth.service';
+import { UserRole } from '../models/user.model';
 
 @Injectable()
 export class UserService {
@@ -26,48 +27,17 @@ export class UserService {
         newUser.fullName = user.fullName;
         newUser.email = user.email;
         newUser.password = passwordHash;
-        newUser.role = user.role;
+        newUser.role = UserRole.USER;
 
         return from(this.userRepository.save(newUser)).pipe(
           map((user: User) => {
             const { password, ...result } = user;
-            return result;
+            return result
           }),
           catchError((err) => throwError(err))
         );
       })
     );
-  }
-
-  findOne(id: number): Observable<User> {
-    return from(this.userRepository.findOne({ id })).pipe(
-      map((user: User) => {
-        const { password, ...result } = user;
-        return result;
-      })
-    );
-  }
-
-  findAll(): Observable<User[]> {
-    return from(this.userRepository.find()).pipe(
-      map((users: User[]) => {
-        users.forEach(function (v) {
-          delete v.password;
-        });
-        return users;
-      })
-    );
-  }
-
-  deleteOne(id: number): Observable<any> {
-    return from(this.userRepository.delete(id));
-  }
-
-  updateOne(id: number, user: User): Observable<any> {
-    delete user.email;
-    delete user.password;
-
-    return from(this.userRepository.update(id, user));
   }
 
   login(user: User): Observable<string> {
@@ -99,6 +69,38 @@ export class UserService {
         )
       )
     );
+  }
+
+  findOne(id: number): Observable<User> {
+    return from(this.userRepository.findOne({ id })).pipe(
+      map((user: User) => {
+        const { password, ...result } = user;
+        return result;
+      })
+    );
+  }
+
+  findAll(): Observable<User[]> {
+    return from(this.userRepository.find()).pipe(
+      map((users: User[]) => {
+        users.forEach(function (v) {
+          delete v.password;
+        });
+        return users;
+      })
+    );
+  }
+
+  deleteOne(id: number): Observable<any> {
+    return from(this.userRepository.delete(id));
+  }
+
+  updateOne(id: number, user: User): Observable<any> {
+    delete user.email;
+    delete user.password;
+    delete user.role;
+
+    return from(this.userRepository.update(id, user));
   }
 
   findByMail(email: string): Observable<User> {
