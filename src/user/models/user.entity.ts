@@ -6,6 +6,7 @@ import {
   Column,
   BeforeInsert,
   OneToMany,
+  BeforeUpdate,
 } from 'typeorm';
 import { UserRole } from './user.model';
 
@@ -30,11 +31,25 @@ export class UserEntity {
   })
   role: string;
 
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updatedAt: Date;
+
   @BeforeInsert()
   emailToLowerCase() {
     this.email = this.email.toLowerCase();
   }
 
-  @OneToMany(() => ParticipantEntity, participantEntity => participantEntity.user)
+  @BeforeUpdate()
+  updateTimeStamo() {
+    this.updatedAt = new Date();
+  }
+
+  @OneToMany(
+    () => ParticipantEntity,
+    (participantEntity) => participantEntity.user
+  )
   public participantEntity: ParticipantEntity;
 }
