@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { ParticipantEntity } from 'src/participant/models/participant.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { statusEnum } from './seminar.model';
 
 @Entity()
@@ -25,4 +26,10 @@ export class SeminarEntity {
     default: statusEnum.comingSoon,
   })
   status: string;
+
+  @OneToMany(
+    () => ParticipantEntity,
+    (participantEntity) => participantEntity.seminar
+  )
+  public participantEntity: ParticipantEntity[];
 }
