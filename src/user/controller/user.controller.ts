@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -9,7 +10,6 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { catchError, Observable, of, map } from 'rxjs';
 import { hasRoles } from 'src/auth/decorator/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-guards';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
@@ -17,52 +17,131 @@ import { UserIsUserGuard } from 'src/auth/guards/UserIsUser.guard';
 import { User } from '../models/user.interface';
 import { UserRole } from '../models/user.model';
 import { UserService } from '../service/user.service';
+import * as bcrypt from 'bcrypt';
+import { AuthService } from 'src/auth/service/auth.service';
 
 @Controller('user')
 export class UserController {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private authService: AuthService
+  ) {}
 
-  @Post()
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  create(@Body() user: User): Observable<User | Object> {
-    return this.userService.create(user).pipe(
-      map((user: User) => user),
-      catchError((err) => of({ error: err.message }))
-    );
+  @Post('register')
+  async register(
+    @Body('fullName') fullName: string,
+    @Body('email') email: string,
+    @Body('password') password: string
+  ) {
+    if (fullName === undefined) {
+      throw new BadRequestException('Fullname Required ');
+    }
+
+    if (email === undefined) {
+      throw new BadRequestException('Email Required');
+    }
+
+    if (password === undefined) {
+      throw new BadRequestException('Password Required');
+    }
+
+    const checkEmail = await this.userService.findOne({ email });
+    if (checkEmail) {
+      throw new BadRequestException(
+        'Email already use, please use another email'
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const users = await this.userService.create({
+      fullName,
+      email,
+      password: hashedPassword,
+      role: UserRole.USER,
+    });
+
+    delete users.password;
+    delete users.role;
+
+    return users;
   }
 
   @Post('login')
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  login(@Body() user: User): Observable<Object> {
-    return this.userService.login(user).pipe(
-      map((jwt: string) => {
-        return { access_token: jwt };
-      })
-    );
+  async login(
+    @Body('email') email: string,
+    @Body('password') password: string
+  ) {
+    if (email === undefined || password === undefined) {
+      throw new BadRequestException('Email & Password Required');
+    }
+
+    const user = await this.userService.findOne({ email });
+
+    if (!user) {
+      throw new BadRequestException('Invalid Email');
+    }
+
+    if (!(await this.authService.comparePasswords(password, user.password))) {
+      throw new BadRequestException('Invalid Password');
+    }
+
+    const token = this.authService.generateJWT(user);
+
+    return token;
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard, UserIsUserGuard)
-  findOne(@Param() params): Observable<User> {
-    return this.userService.findOne(params.id);
+  async findOne(@Param('id') id: string): Promise<User> {
+    const user = await this.userService.findOne(Number(id));
+
+    delete user.password;
+    delete user.role;
+
+    return user;
   }
 
   @hasRoles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
-  findAll(): Observable<User[]> {
-    return this.userService.findAll();
+  async findAll(): Promise<User[]> {
+    const users = await this.userService.findAll();
+
+    users.forEach(function (v) {
+      delete v.password;
+      delete v.role;
+    });
+
+    return users;
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, UserIsUserGuard)
-  deleteOne(@Param('id') id: string): Observable<User> {
-    return this.userService.deleteOne(Number(id));
+  async deleteOne(@Param('id') id: string): Promise<string> {
+    const deleteUser = await this.userService.deleteOne(Number(id));
+
+    if (!deleteUser) {
+      throw 'Unable to delete data'
+    }
+
+    return 'Delete Successfully';
   }
 
   @Put(':id')
   @UseGuards(JwtAuthGuard, UserIsUserGuard)
-  updateOne(@Param('id') id: string, @Body() user: User): Observable<User> {
-    return this.userService.updateOne(Number(id), user);
+  async updateOne(@Param('id') id: string, @Body() user: User): Promise<User> {
+    const updateData = await this.userService.updateOne(Number(id), user);
+
+    if (!updateData) {
+      throw 'Unable to update data';
+    }
+
+    const getData = await this.userService.findOne(Number(id));
+
+    delete getData.password;
+    delete getData.role;
+
+    return getData;
   }
 }

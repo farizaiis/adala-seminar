@@ -24,27 +24,23 @@ export class SeminarService {
     return from(this.seminarRepository.save(seminar));
   }
 
-  findOne(id: number): Observable<Seminar> {
-    return from(this.seminarRepository.findOne({ id }));
+  async findOne(condition: any): Promise<Seminar> {
+    return this.seminarRepository.findOne(condition);
   }
 
-  findAll(): Observable<Seminar[]> {
-    return from(this.seminarRepository.find());
+  async findAll(): Promise<Seminar[]> {
+    return this.seminarRepository.find();
   }
 
-  paginate(options: IPaginationOptions): Observable<Pagination<Seminar>> {
-    return from(paginate<Seminar>(this.seminarRepository, options)).pipe(
-      map((seminarPageable: Pagination<Seminar>) => {
-        return seminarPageable;
-      })
-    );
+  async paginate(options: IPaginationOptions): Promise<Pagination<Seminar>> {
+    return paginate<Seminar>(this.seminarRepository, options)
   }
 
-  deleteOne(id: number): Observable<any> {
-    return from(this.seminarRepository.delete(id));
+  async deleteOne(id: number): Promise<any> {
+    return this.seminarRepository.delete(id);
   }
 
-  updateOne(id: number, seminar: Seminar): Observable<any> {
-    return from(this.seminarRepository.update(id, seminar));
+  async updateOne(id: number, seminar: Seminar): Promise<any> {
+    return this.seminarRepository.update(id, seminar);
   }
 }
