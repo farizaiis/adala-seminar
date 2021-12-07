@@ -16,6 +16,10 @@ export class ParticipantService {
     return this.participantRepository.save(participant);
   }
 
+  async findOne(condition: any): Promise<Participant> {
+    return this.participantRepository.findOne(condition)
+  }
+
   async deleteOne(id: number): Promise<any> {
     return this.participantRepository.delete(id);
   }

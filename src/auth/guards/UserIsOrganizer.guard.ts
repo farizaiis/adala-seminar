@@ -7,14 +7,14 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ParticipantService } from 'src/participant/service/participant.service';
 import { User } from 'src/user/models/user.interface';
-import { UserService } from 'src/user/service/user.service';
 
 @Injectable()
-export class UserIsUserGuard implements CanActivate {
+export class UserIsOrganizerGuard implements CanActivate {
   constructor(
-    @Inject(forwardRef(() => UserService))
-    private userService: UserService
+    @Inject(forwardRef(() => ParticipantService))
+    private participantService: ParticipantService
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -22,13 +22,17 @@ export class UserIsUserGuard implements CanActivate {
     const params = request.params;
     const user: User = request.user.user;
 
+    const checkUser = await this.participantService.findOne({
+      seminarId: Number(params.id),
+    });
+
     let hasPermission = false;
-    if (user.id === Number(params.id)) {
+    if (checkUser.userId === user.id) {
       hasPermission = true;
     }
 
-    if(hasPermission === false) {
-      throw new UnauthorizedException('You can modify another user data')
+    if (hasPermission === false) {
+      throw new UnauthorizedException('Only organizer can manage the Seminar');
     }
 
     return hasPermission;

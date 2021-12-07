@@ -23,7 +23,7 @@ export class ParticipantEntity {
   audience: string;
 
   @ManyToOne(() => SeminarEntity, (seminar) => seminar.listAudience)
-  public seminar: SeminarEntity;
+  seminar: SeminarEntity;
 
   @ManyToOne(() => UserEntity, (user) => user.registeredSeminar)
   user: UserEntity;

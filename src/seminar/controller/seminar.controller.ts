@@ -23,6 +23,7 @@ import { Seminar } from '../models/seminar.interface';
 import { statusEnum } from '../models/seminar.model';
 import { audienceEnum } from 'src/participant/models/participant.model';
 import { SeminarService } from '../service/seminar.service';
+import { UserIsOrganizerGuard } from 'src/auth/guards/UserIsOrganizer.guard';
 
 @Controller('seminar')
 export class SeminarController {
@@ -76,7 +77,12 @@ export class SeminarController {
       throw new NotFoundException();
     }
 
-    return this.seminarService.findOne(Number(id));
+    const seminar = await this.seminarService.findOne({
+      where: { id },
+      relations: ['listAudience', 'listAudience.user'],
+    });
+
+    return seminar;
   }
 
   @Get()
@@ -95,7 +101,7 @@ export class SeminarController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, UserIsOrganizerGuard)
   async deleteOne(@Param('id') id: string): Promise<string> {
     const checkData = await this.seminarService.findOne(Number(id));
 
@@ -113,7 +119,7 @@ export class SeminarController {
   }
 
   @Put(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, UserIsOrganizerGuard)
   async updateOne(
     @Param('id') id: string,
     @Body('name') name: string,
