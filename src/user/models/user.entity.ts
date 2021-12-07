@@ -51,5 +51,5 @@ export class UserEntity {
     () => ParticipantEntity,
     (participantEntity) => participantEntity.user
   )
-  public participantEntity: ParticipantEntity;
+  registeredSeminar: ParticipantEntity[];
 }

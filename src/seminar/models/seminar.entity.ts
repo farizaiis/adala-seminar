@@ -48,5 +48,5 @@ export class SeminarEntity {
     () => ParticipantEntity,
     (participantEntity) => participantEntity.seminar
   )
-  public participantEntity: ParticipantEntity[];
+  listAudience: ParticipantEntity[];
 }
