@@ -72,15 +72,25 @@ export class SeminarController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async findOne(@Param('id') id: string): Promise<Seminar> {
+  async findOne(@Param('id') id: string, @Request() req): Promise<Seminar> {
     if (!(await this.seminarService.findOne(Number(id)))) {
       throw new NotFoundException();
     }
 
-    const seminar = await this.seminarService.findOne({
-      where: { id },
-      relations: ['listAudience', 'listAudience.user'],
+    const checkData = await this.participantService.findOne({
+      where: { seminarId: Number(id) },
     });
+
+    if (checkData.userId === req.user.user.id) {
+      const seminar = await this.seminarService.findOne({
+        where: { id },
+        relations: ['listAudience', 'listAudience.user'],
+      });
+
+      return seminar;
+    }
+
+    const seminar = await this.seminarService.findOne(id);
 
     return seminar;
   }
