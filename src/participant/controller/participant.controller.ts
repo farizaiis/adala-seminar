@@ -1,34 +1,59 @@
+/* eslint-disable prettier/prettier */
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
+  NotFoundException,
   Param,
   Post,
   Put,
+  Request,
   UseGuards,
 } from '@nestjs/common';
-import { catchError, map, Observable, of } from 'rxjs';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-guards';
+import { SeminarService } from 'src/seminar/service/seminar.service';
 import { Participant } from '../models/participant.interface';
+import { audienceEnum } from '../models/participant.model';
 import { ParticipantService } from '../service/participant.service';
 
 @Controller('participant')
 export class ParticipantController {
-  constructor(private participantService: ParticipantService) {}
+  constructor(
+    private participantService: ParticipantService,
+    private seminarService: SeminarService
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
   // eslint-disable-next-line @typescript-eslint/ban-types
-  create(@Body() participant: Participant): Observable<Participant | Object> {
-    return this.participantService.create(participant).pipe(
-      map((participant: Participant) => participant),
-      catchError((err) => of({ error: err.message }))
-    );
+  async create(@Body('seminarId') seminarId: number, @Request() req) {
+    const seminar = await this.seminarService.findOne({ id: seminarId });
+
+    if (!seminar) {
+      throw new NotFoundException();
+    }
+
+    const checkQuota = await this.seminarService.countAudience({ seminarId });
+
+    if (seminar.quota <= checkQuota) {
+      throw new BadRequestException(
+        'You cannot join the seminar, because the audience already full'
+      );
+    }
+
+    const participant = await this.participantService.create({
+      seminarId,
+      userId: req.user.user.id,
+      audience: audienceEnum.participant,
+    });
+
+    return { seminar, participant };
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  deleteOne(@Param('id') id: string): Observable<Participant> {
+  deleteOne(@Param('id') id: string): Promise<Participant> {
     return this.participantService.deleteOne(Number(id));
   }
 
@@ -37,7 +62,7 @@ export class ParticipantController {
   updateOne(
     @Param('id') id: string,
     @Body() participant: Participant
-  ): Observable<Participant> {
+  ): Promise<Participant> {
     return this.participantService.updateOne(Number(id), participant);
   }
 }

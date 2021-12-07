@@ -7,22 +7,29 @@ import {
   Controller,
   Delete,
   Get,
+  InternalServerErrorException,
   NotFoundException,
   Param,
   Post,
   Put,
   Query,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-guards';
+import { ParticipantService } from 'src/participant/service/participant.service';
 import { Seminar } from '../models/seminar.interface';
 import { statusEnum } from '../models/seminar.model';
+import { audienceEnum } from 'src/participant/models/participant.model';
 import { SeminarService } from '../service/seminar.service';
 
 @Controller('seminar')
 export class SeminarController {
-  constructor(private seminarService: SeminarService) {}
+  constructor(
+    private seminarService: SeminarService,
+    private participantService: ParticipantService
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -30,7 +37,8 @@ export class SeminarController {
     @Body('name') name: string,
     @Body('date') date: string,
     @Body('time') time: string,
-    @Body('quota') quota: number
+    @Body('quota') quota: number,
+    @Request() req
   ) {
     if (quota < 10 || quota > 50) {
       throw new BadRequestException(
@@ -44,7 +52,7 @@ export class SeminarController {
       throw new BadRequestException('Cannot duplicate seminar');
     }
 
-    const createData = this.seminarService.create({
+    const seminar = await this.seminarService.create({
       name,
       date,
       time,
@@ -52,7 +60,13 @@ export class SeminarController {
       status: statusEnum.comingSoon,
     });
 
-    return createData;
+    const organizer = await this.participantService.create({
+      userId: req.user.user.id,
+      seminarId: seminar.id,
+      audience: audienceEnum.organizer,
+    });
+
+    return { seminar, organizer };
   }
 
   @Get(':id')
@@ -92,7 +106,7 @@ export class SeminarController {
     const deleteData = await this.seminarService.deleteOne(Number(id));
 
     if (!deleteData) {
-      throw 'Unable to delete data';
+      throw new InternalServerErrorException('Unable to delete data');
     }
 
     return 'Delete Successfully';
@@ -123,7 +137,7 @@ export class SeminarController {
     const updateData = await this.seminarService.updateOne(Number(id), seminar);
 
     if (!updateData) {
-      throw 'Unable to update data';
+      throw new InternalServerErrorException('Unable to update data');
     }
 
     const getData = await this.seminarService.findOne(Number(id));

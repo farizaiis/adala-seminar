@@ -2,6 +2,7 @@
 import { SeminarEntity } from 'src/seminar/models/seminar.entity';
 import { UserEntity } from 'src/user/models/user.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { audienceEnum } from './participant.model';
 
 @Entity()
 export class ParticipantEntity {
@@ -13,6 +14,13 @@ export class ParticipantEntity {
 
   @Column()
   seminarId: number;
+
+  @Column({
+    type: 'enum',
+    enum: audienceEnum,
+    default: audienceEnum.participant,
+  })
+  audience: string;
 
   @ManyToOne(() => SeminarEntity, (seminar) => seminar.participantEntity)
   public seminar: SeminarEntity;

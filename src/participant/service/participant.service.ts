@@ -1,7 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { from, Observable } from 'rxjs';
 import { Repository } from 'typeorm';
 import { ParticipantEntity } from '../models/participant.entity';
 import { Participant } from '../models/participant.interface';
@@ -13,15 +12,15 @@ export class ParticipantService {
     private readonly participantRepository: Repository<ParticipantEntity>
   ) {}
 
-  create(participant: Participant): Observable<Participant> {
-    return from(this.participantRepository.save(participant));
+  async create(participant: Participant): Promise<Participant> {
+    return this.participantRepository.save(participant);
   }
 
-  deleteOne(id: number): Observable<any> {
-    return from(this.participantRepository.delete(id));
+  async deleteOne(id: number): Promise<any> {
+    return this.participantRepository.delete(id);
   }
 
-  updateOne(id: number, participant: Participant): Observable<any> {
-    return from(this.participantRepository.update(id, participant));
+  async updateOne(id: number, participant: Participant): Promise<any> {
+    return this.participantRepository.update(id, participant);
   }
 }

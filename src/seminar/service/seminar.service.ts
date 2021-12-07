@@ -12,16 +12,19 @@ import {
   Pagination,
   IPaginationOptions,
 } from 'nestjs-typeorm-paginate';
+import { ParticipantEntity } from 'src/participant/models/participant.entity';
 
 @Injectable()
 export class SeminarService {
   constructor(
     @InjectRepository(SeminarEntity)
-    private readonly seminarRepository: Repository<SeminarEntity>
+    private readonly seminarRepository: Repository<SeminarEntity>,
+    @InjectRepository(ParticipantEntity)
+    private readonly participantRepository: Repository<ParticipantEntity>,
   ) {}
 
-  create(seminar: Seminar): Observable<Seminar> {
-    return from(this.seminarRepository.save(seminar));
+  create(seminar: Seminar): Promise<Seminar> {
+    return this.seminarRepository.save(seminar);
   }
 
   async findOne(condition: any): Promise<Seminar> {
@@ -33,7 +36,7 @@ export class SeminarService {
   }
 
   async paginate(options: IPaginationOptions): Promise<Pagination<Seminar>> {
-    return paginate<Seminar>(this.seminarRepository, options)
+    return paginate<Seminar>(this.seminarRepository, options);
   }
 
   async deleteOne(id: number): Promise<any> {
@@ -42,5 +45,9 @@ export class SeminarService {
 
   async updateOne(id: number, seminar: Seminar): Promise<any> {
     return this.seminarRepository.update(id, seminar);
+  }
+
+  async countAudience(condition: any): Promise<number> {
+    return this.participantRepository.count(condition)
   }
 }
