@@ -7,10 +7,8 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Observable } from 'rxjs';
 import { User } from 'src/user/models/user.interface';
 import { UserService } from 'src/user/service/user.service';
-import { map } from 'rxjs';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -21,9 +19,7 @@ export class RolesGuard implements CanActivate {
     private userService: UserService
   ) {}
 
-  canActivate(
-    context: ExecutionContext
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const roles = this.reflector.get<string[]>('roles', context.getHandler());
     if (!roles) {
       return true;
@@ -33,19 +29,16 @@ export class RolesGuard implements CanActivate {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const user: User = request.user.user;
 
-    return this.userService.findOne(user.id).pipe(
-      map((user: User) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const hasRole = () => roles.indexOf(user.role) > -1;
-        // eslint-disable-next-line @typescript-eslint/no-inferrable-types
-        let hasPermission: boolean = false;
+    await this.userService.findOne(user);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const hasRole = () => roles.indexOf(user.role) > -1;
+    // eslint-disable-next-line @typescript-eslint/no-inferrable-types
+    let hasPermission: boolean = false;
 
-        if (hasRole()) {
-          hasPermission = true;
-        }
+    if (hasRole()) {
+      hasPermission = true;
 
-        return user && hasPermission;
-      })
-    );
+      return user && hasPermission;
+    }
   }
 }
