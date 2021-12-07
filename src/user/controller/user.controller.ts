@@ -61,10 +61,12 @@ export class UserController {
       role: UserRole.USER,
     });
 
+    const token = await this.authService.generateJWT(users);
+
     delete users.password;
     delete users.role;
 
-    return users;
+    return { users, token };
   }
 
   @Post('login')
@@ -86,15 +88,18 @@ export class UserController {
       throw new BadRequestException('Invalid Password');
     }
 
-    const token = this.authService.generateJWT(user);
+    const token = await this.authService.generateJWT(user);
 
-    return token;
+    return { token };
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard, UserIsUserGuard)
   async findOne(@Param('id') id: string): Promise<User> {
-    const user = await this.userService.findOne(Number(id));
+    const user = await this.userService.findOne({
+      where: { id },
+      relations: ['registeredSeminar', 'registeredSeminar.seminar'],
+    });
 
     delete user.password;
     delete user.role;
@@ -122,7 +127,7 @@ export class UserController {
     const deleteUser = await this.userService.deleteOne(Number(id));
 
     if (!deleteUser) {
-      throw 'Unable to delete data'
+      throw 'Unable to delete data';
     }
 
     return 'Delete Successfully';
