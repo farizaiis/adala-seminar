@@ -3,17 +3,13 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Delete,
   NotFoundException,
-  Param,
   Post,
-  Put,
   Request,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-guards';
 import { SeminarService } from 'src/seminar/service/seminar.service';
-import { Participant } from '../models/participant.interface';
 import { audienceEnum } from '../models/participant.model';
 import { ParticipantService } from '../service/participant.service';
 
@@ -43,7 +39,7 @@ export class ParticipantController {
     }
 
     if (seminar.status === 'Ended') {
-      throw new BadRequestException('Seminar has Ended')
+      throw new BadRequestException('Seminar has Ended');
     }
 
     const participant = await this.participantService.create({
@@ -53,20 +49,5 @@ export class ParticipantController {
     });
 
     return { seminar, participant };
-  }
-
-  @Delete(':id')
-  @UseGuards(JwtAuthGuard)
-  deleteOne(@Param('id') id: string): Promise<Participant> {
-    return this.participantService.deleteOne(Number(id));
-  }
-
-  @Put(':id')
-  @UseGuards(JwtAuthGuard)
-  updateOne(
-    @Param('id') id: string,
-    @Body() participant: Participant
-  ): Promise<Participant> {
-    return this.participantService.updateOne(Number(id), participant);
   }
 }
