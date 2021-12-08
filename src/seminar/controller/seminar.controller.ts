@@ -24,6 +24,7 @@ import { statusEnum } from '../models/seminar.model';
 import { audienceEnum } from 'src/participant/models/participant.model';
 import { SeminarService } from '../service/seminar.service';
 import { UserIsOrganizerGuard } from 'src/auth/guards/UserIsOrganizer.guard';
+import * as moment from 'moment';
 
 @Controller('seminar')
 export class SeminarController {
@@ -41,6 +42,32 @@ export class SeminarController {
     @Body('quota') quota: number,
     @Request() req
   ) {
+    const dates = new Date();
+    const momentDates = moment(
+      new Date(
+        dates.getFullYear(),
+        dates.getMonth(),
+        dates.getDate(),
+        dates.getHours(),
+        dates.getMinutes()
+      )
+    );
+
+    const today = momentDates.format('YYYY-MM-DD');
+    const currentTime = momentDates.format('hh:mm:ss');
+
+    if (date < today) {
+      throw new BadRequestException(
+        'You cannot create Seminar with date has already pass'
+      );
+    }
+
+    if (date == today && time < currentTime) {
+      throw new BadRequestException(
+        'You cannot create Seminar with time has already pass'
+      );
+    }
+
     if (quota < 10 || quota > 50) {
       throw new BadRequestException(
         'Quota for seminar minimum 10 and maximum 50'
@@ -133,7 +160,9 @@ export class SeminarController {
   async updateOne(
     @Param('id') id: string,
     @Body('name') name: string,
-    @Body()
+    @Body('date') date: string,
+    @Body('time') time: string,
+    @Body('quota') quota: number,
     seminar: Seminar
   ): Promise<Seminar> {
     const checkData = await this.seminarService.findOne(Number(id));
@@ -147,6 +176,59 @@ export class SeminarController {
 
       if (checkName) {
         throw new BadRequestException('Cannot duplicate seminar');
+      }
+    }
+
+    if (quota) {
+      if (quota < 10 || quota > 50) {
+        throw new BadRequestException(
+          'Quota for seminar minimum 10 and maximum 50'
+        );
+      }
+    }
+
+    const dates = new Date();
+    const momentDates = moment(
+      new Date(
+        dates.getFullYear(),
+        dates.getMonth(),
+        dates.getDate(),
+        dates.getHours(),
+        dates.getMinutes()
+      )
+    );
+
+    const today = momentDates.format('YYYY-MM-DD');
+    const currentTime = momentDates.format('hh:mm:ss');
+
+    if (date && time) {
+      if (date < today) {
+        throw new BadRequestException(
+          'You cannot create Seminar with date has already pass'
+        );
+      }
+      if (date == today && time < currentTime) {
+        throw new BadRequestException(
+          'You cannot create Seminar with time has already pass'
+        );
+      }
+    }
+
+    if (date) {
+      if (date < today) {
+        throw new BadRequestException(
+          'You cannot create Seminar with date has already pass'
+        );
+      }
+    }
+
+    if (time) {
+      const getDate = await this.seminarService.findOne(id);
+
+      if (getDate == today && time < currentTime) {
+        throw new BadRequestException(
+          'You cannot create Seminar with time has already pass'
+        );
       }
     }
 

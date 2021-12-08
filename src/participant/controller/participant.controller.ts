@@ -42,6 +42,10 @@ export class ParticipantController {
       );
     }
 
+    if (seminar.status === 'Ended') {
+      throw new BadRequestException('Seminar has Ended')
+    }
+
     const participant = await this.participantService.create({
       seminarId,
       userId: req.user.user.id,

@@ -5,6 +5,7 @@ import {
   Controller,
   Delete,
   Get,
+  InternalServerErrorException,
   Param,
   Post,
   Put,
@@ -127,7 +128,7 @@ export class UserController {
     const deleteUser = await this.userService.deleteOne(Number(id));
 
     if (!deleteUser) {
-      throw 'Unable to delete data';
+      throw new InternalServerErrorException('Unable to delete data');
     }
 
     return 'Delete Successfully';
@@ -139,7 +140,7 @@ export class UserController {
     const updateData = await this.userService.updateOne(Number(id), user);
 
     if (!updateData) {
-      throw 'Unable to update data';
+      throw new InternalServerErrorException('Unable to update data');
     }
 
     const getData = await this.userService.findOne(Number(id));

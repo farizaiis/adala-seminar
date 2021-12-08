@@ -3,7 +3,6 @@
 /* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { from, map, Observable } from 'rxjs';
 import { Repository } from 'typeorm';
 import { SeminarEntity } from '../models/seminar.entity';
 import { Seminar } from '../models/seminar.interface';
