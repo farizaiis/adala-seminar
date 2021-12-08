@@ -34,40 +34,44 @@ export class UserController {
     @Body('email') email: string,
     @Body('password') password: string
   ) {
-    if (fullName === undefined) {
-      throw new BadRequestException('Fullname Required ');
+    try {
+      if (fullName === undefined) {
+        throw new BadRequestException('Fullname Required ');
+      }
+
+      if (email === undefined) {
+        throw new BadRequestException('Email Required');
+      }
+
+      if (password === undefined) {
+        throw new BadRequestException('Password Required');
+      }
+
+      const checkEmail = await this.userService.findOne({ email });
+      if (checkEmail) {
+        throw new BadRequestException(
+          'Email already use, please use another email'
+        );
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 12);
+
+      const users = await this.userService.create({
+        fullName,
+        email,
+        password: hashedPassword,
+        role: UserRole.USER,
+      });
+
+      const token = await this.authService.generateJWT(users);
+
+      delete users.password;
+      delete users.role;
+
+      return { users, token };
+    } catch (error) {
+      throw error;
     }
-
-    if (email === undefined) {
-      throw new BadRequestException('Email Required');
-    }
-
-    if (password === undefined) {
-      throw new BadRequestException('Password Required');
-    }
-
-    const checkEmail = await this.userService.findOne({ email });
-    if (checkEmail) {
-      throw new BadRequestException(
-        'Email already use, please use another email'
-      );
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    const users = await this.userService.create({
-      fullName,
-      email,
-      password: hashedPassword,
-      role: UserRole.USER,
-    });
-
-    const token = await this.authService.generateJWT(users);
-
-    delete users.password;
-    delete users.role;
-
-    return { users, token };
   }
 
   @Post('login')
@@ -75,79 +79,99 @@ export class UserController {
     @Body('email') email: string,
     @Body('password') password: string
   ) {
-    if (email === undefined || password === undefined) {
-      throw new BadRequestException('Email & Password Required');
+    try {
+      if (email === undefined || password === undefined) {
+        throw new BadRequestException('Email & Password Required');
+      }
+
+      const user = await this.userService.findOne({ email });
+
+      if (!user) {
+        throw new BadRequestException('Invalid Email');
+      }
+
+      if (!(await this.authService.comparePasswords(password, user.password))) {
+        throw new BadRequestException('Invalid Password');
+      }
+
+      const token = await this.authService.generateJWT(user);
+
+      return { token };
+    } catch (error) {
+      throw error;
     }
-
-    const user = await this.userService.findOne({ email });
-
-    if (!user) {
-      throw new BadRequestException('Invalid Email');
-    }
-
-    if (!(await this.authService.comparePasswords(password, user.password))) {
-      throw new BadRequestException('Invalid Password');
-    }
-
-    const token = await this.authService.generateJWT(user);
-
-    return { token };
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard, UserIsUserGuard)
   async findOne(@Param('id') id: string): Promise<User> {
-    const user = await this.userService.findOne({
-      where: { id },
-      relations: ['registeredSeminar', 'registeredSeminar.seminar'],
-    });
+    try {
+      const user = await this.userService.findOne({
+        where: { id },
+        relations: ['registeredSeminar', 'registeredSeminar.seminar'],
+      });
 
-    delete user.password;
-    delete user.role;
+      delete user.password;
+      delete user.role;
 
-    return user;
+      return user;
+    } catch (error) {
+      throw error;
+    }
   }
 
   @hasRoles(UserRole.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   async findAll(): Promise<User[]> {
-    const users = await this.userService.findAll();
+    try {
+      const users = await this.userService.findAll();
 
-    users.forEach(function (v) {
-      delete v.password;
-      delete v.role;
-    });
+      users.forEach(function (v) {
+        delete v.password;
+        delete v.role;
+      });
 
-    return users;
+      return users;
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, UserIsUserGuard)
   async deleteOne(@Param('id') id: string): Promise<string> {
-    const deleteUser = await this.userService.deleteOne(Number(id));
+    try {
+      const deleteUser = await this.userService.deleteOne(Number(id));
 
-    if (!deleteUser) {
-      throw new InternalServerErrorException('Unable to delete data');
+      if (!deleteUser) {
+        throw new InternalServerErrorException('Unable to delete data');
+      }
+
+      return 'Delete Successfully';
+    } catch (error) {
+      throw error;
     }
-
-    return 'Delete Successfully';
   }
 
   @Put(':id')
   @UseGuards(JwtAuthGuard, UserIsUserGuard)
   async updateOne(@Param('id') id: string, @Body() user: User): Promise<User> {
-    const updateData = await this.userService.updateOne(Number(id), user);
+    try {
+      const updateData = await this.userService.updateOne(Number(id), user);
 
-    if (!updateData) {
-      throw new InternalServerErrorException('Unable to update data');
+      if (!updateData) {
+        throw new InternalServerErrorException('Unable to update data');
+      }
+
+      const getData = await this.userService.findOne(Number(id));
+
+      delete getData.password;
+      delete getData.role;
+
+      return getData;
+    } catch (error) {
+      throw error;
     }
-
-    const getData = await this.userService.findOne(Number(id));
-
-    delete getData.password;
-    delete getData.role;
-
-    return getData;
   }
 }
