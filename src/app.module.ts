@@ -14,6 +14,9 @@ import { ParticipantModule } from './participant/participant.module';
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',
+      ssl: {
+        rejectUnauthorized: false,
+      },
       host: process.env.DB_PROD_HOST || process.env.DB_LOCAL_HOST,
       port: 5432,
       username: process.env.DB_PROD_USERNAME || process.env.DB_LOCAL_USERNAME,
