@@ -32,7 +32,8 @@ export class UserController {
   async register(
     @Body('fullName') fullName: string,
     @Body('email') email: string,
-    @Body('password') password: string
+    @Body('password') password: string,
+    @Body('role') role: string
   ) {
     try {
       if (fullName === undefined) {
@@ -60,7 +61,8 @@ export class UserController {
         fullName,
         email,
         password: hashedPassword,
-        role: UserRole.USER,
+        // role: UserRole.USER,
+        role,
       });
 
       const token = await this.authService.generateJWT(users);
