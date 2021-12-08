@@ -46,7 +46,10 @@ export class SeminarEntity {
 
   @OneToMany(
     () => ParticipantEntity,
-    (participantEntity) => participantEntity.seminar
+    (participantEntity) => participantEntity.seminar,
+    {
+      cascade: true,
+    }
   )
   listAudience: ParticipantEntity[];
 }
