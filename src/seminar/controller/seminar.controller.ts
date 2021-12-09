@@ -179,6 +179,7 @@ export class SeminarController {
     @Body('date') date: string,
     @Body('time') time: string,
     @Body('quota') quota: number,
+    @Body()
     seminar: Seminar
   ): Promise<Seminar> {
     try {
