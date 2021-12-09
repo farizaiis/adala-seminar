@@ -33,6 +33,7 @@
     "@nestjs/typeorm": "^8.0.2",
     "@types/passport": "^1.0.7",
     "bcrypt": "^5.0.1",
+    "class-transformer": "^0.5.1",
     "heroku": "^7.59.2",
     "heroku-cli": "^7.0.9",
     "moment": "^2.29.1",

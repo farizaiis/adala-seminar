@@ -119,8 +119,6 @@ export class SeminarController {
           relations: ['listAudience', 'listAudience.user'],
         });
 
-        delete seminar.listAudience.password;
-
         return seminar;
       }
 
