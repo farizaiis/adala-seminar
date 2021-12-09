@@ -141,7 +141,7 @@ export class SeminarController {
       const data = await this.seminarService.paginate({
         page: Number(page),
         limit: Number(limit),
-        route: 'http://localhost:3000/seminar',
+        route: 'https://seminar-adala.herokuapp.com/seminar',
       });
       return data;
     } catch (error) {
