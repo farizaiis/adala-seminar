@@ -22,13 +22,9 @@ export class ParticipantEntity {
   })
   audience: string;
 
-  @ManyToOne(() => SeminarEntity, (seminar) => seminar.listAudience, {
-    cascade: true,
-  })
+  @ManyToOne(() => SeminarEntity, (seminar) => seminar.listAudience)
   seminar: SeminarEntity;
 
-  @ManyToOne(() => UserEntity, (user) => user.registeredSeminar, {
-    cascade: true,
-  })
+  @ManyToOne(() => UserEntity, (user) => user.registeredSeminar)
   user: UserEntity;
 }
