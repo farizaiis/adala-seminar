@@ -1,5 +1,4 @@
 /* eslint-disable prettier/prettier */
-import { Exclude } from 'class-transformer';
 import { ParticipantEntity } from 'src/participant/models/participant.entity';
 import {
   Entity,
@@ -21,11 +20,11 @@ export class UserEntity {
 
   @Column({ unique: true })
   email: string;
-  
-  @Column({select: false})
+
+  @Column()
   password: string;
 
-  @Exclude({ toPlainOnly: true })
+
   @Column({
     type: 'enum',
     enum: UserRole,
@@ -34,11 +33,10 @@ export class UserEntity {
   })
   role: string;
 
-  @Exclude({ toPlainOnly: true })
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @Exclude({ toPlainOnly: true })
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 

@@ -1,5 +1,4 @@
 /* eslint-disable prettier/prettier */
-import { Exclude } from 'class-transformer';
 import { ParticipantEntity } from 'src/participant/models/participant.entity';
 import {
   Entity,
@@ -34,11 +33,9 @@ export class SeminarEntity {
   })
   status: string;
 
-  @Exclude({ toPlainOnly: true })
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @Exclude({ toPlainOnly: true })
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 

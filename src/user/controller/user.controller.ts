@@ -113,6 +113,9 @@ export class UserController {
         relations: ['registeredSeminar', 'registeredSeminar.seminar'],
       });
 
+      delete user.password;
+      delete user.role;
+
       return user;
     } catch (error) {
       throw error;
@@ -125,6 +128,11 @@ export class UserController {
   async findAll(): Promise<User[]> {
     try {
       const users = await this.userService.findAll();
+
+      users.forEach(function (v) {
+        delete v.password;
+        delete v.role;
+      });
 
       return users;
     } catch (error) {
@@ -159,6 +167,9 @@ export class UserController {
       }
 
       const getData = await this.userService.findOne(Number(id));
+
+      delete getData.password;
+      delete getData.role;
 
       return getData;
     } catch (error) {
