@@ -82,7 +82,7 @@ export class UserController {
     @Body('password') password: string
   ) {
     try {
-      if (email === undefined || password === undefined) {
+      if (!email || !password) {
         throw new BadRequestException('Email & Password Required');
       }
 

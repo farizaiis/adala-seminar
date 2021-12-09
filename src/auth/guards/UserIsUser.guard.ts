@@ -27,8 +27,8 @@ export class UserIsUserGuard implements CanActivate {
       hasPermission = true;
     }
 
-    if(hasPermission === false) {
-      throw new UnauthorizedException('You can modify another user data')
+    if (hasPermission === false) {
+      throw new UnauthorizedException('You cant modify another user data');
     }
 
     return hasPermission;
