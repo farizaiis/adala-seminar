@@ -50,10 +50,7 @@ export class UserEntity {
 
   @OneToMany(
     () => ParticipantEntity,
-    (participantEntity) => participantEntity.user,
-    {
-      cascade: true,
-    }
+    (participantEntity) => participantEntity.user
   )
   registeredSeminar: ParticipantEntity[];
 }
